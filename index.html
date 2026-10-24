@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Speak English Daily</title><meta name="theme-color" content="#e8590c"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E🗣️%3C/text%3E%3C/svg%3E">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f7f5ef;--fg:#1f2430;--card:#fff;--mut:#6b7280;--ac:#e8590c;--ac2:#fff1e8;--bd:#e6e2d8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171c;--fg:#eceae4;--card:#1f2229;--mut:#9aa0ab;--ac:#ff8a4c;--ac2:#2c231e;--bd:#2d313a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15171c;--fg:#eceae4;--card:#1f2229;--mut:#9aa0ab;--ac:#ff8a4c;--ac2:#2c231e;--bd:#2d313a;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:14px 16px 6px;max-width:760px;margin:auto}
+h1{font-size:22px;margin:0}header p{margin:2px 0 0;color:var(--mut);font-size:14px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding:8px 12px;max-width:760px;margin:auto}
+nav button{flex:none;border:1px solid var(--bd);background:var(--card);color:var(--fg);padding:8px 13px;border-radius:99px;font-size:14px;cursor:pointer}
+nav button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:760px;margin:auto;padding:8px 14px 40px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin:8px 0}
+.row{display:flex;gap:8px;align-items:center}
+input[type=text],textarea{flex:1;width:100%;border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:12px;padding:11px 13px;font:inherit}
+button.b{border:0;background:var(--ac);color:#fff;border-radius:12px;padding:10px 14px;font:inherit;cursor:pointer}
+button.g{border:1px solid var(--bd);background:var(--card);color:var(--fg);border-radius:10px;padding:5px 10px;font-size:14px;cursor:pointer}
+.mr{color:var(--ac);font-size:15px;margin-top:2px}.mut{color:var(--mut);font-size:13px}
+.msg{max-width:86%;padding:9px 12px;border-radius:14px;margin:6px 0;white-space:pre-wrap}
+.me{background:var(--ac);color:#fff;margin-left:auto}.bot{background:var(--card);border:1px solid var(--bd)}
+#log{min-height:48vh}
+.li{display:flex;justify-content:space-between;gap:8px;align-items:center;cursor:pointer}
+.A{border-left:3px solid var(--ac)}.B{border-left:3px solid #2b8a3e}
+.story{white-space:pre-wrap;font-size:17px;line-height:1.7}
+#pr{position:fixed;inset:0;z-index:50;background:#000;color:#fff}
+#pr video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+#pr video.pl{transform:none;object-fit:contain}
+#pt{position:absolute;left:0;right:0;top:0;bottom:96px;overflow:hidden;background:rgba(0,0,0,.4)}
+#pti{padding:40% 22px 80%;font-size:30px;line-height:1.5;text-shadow:0 1px 4px #000;will-change:transform}
+#pc{position:absolute;left:0;right:0;bottom:0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center;background:rgba(0,0,0,.65)}
+#pm{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));left:12px;right:12px;font-size:14px;text-align:center}
+[hidden]{display:none!important}
+</style></head><body>
+<header><h1>🗣️ Speak English Daily</h1><p>बोला इंग्रजी रोज · Practice a little every day</p></header>
+<nav id="nav"></nav><main id="main"></main><div id="pr" hidden></div>
+<script>
+const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const MODEL="gemini-flash-latest";
+let KEY=localStorage.getItem("gk");
+function needKey(){if(!KEY){const k=prompt("Paste your free Gemini API key (from aistudio.google.com/apikey)");if(k){KEY=k.trim();localStorage.setItem("gk",KEY);}}return KEY;}
+async function gem(contents){
+ if(!needKey())throw new Error("Please paste your Gemini key. Reload the page and try again.");
+ const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+MODEL+":generateContent?key="+KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents})});
+ const d=await r.json();
+ if(!r.ok){if(r.status===400||r.status===403){localStorage.removeItem("gk");KEY=null;}throw new Error((d.error&&d.error.message)||"AI error");}
+ return d.candidates[0].content.parts.map(p=>p.text||"").join("");
+}
+const S=async input=>{const c=typeof input==="string"?[{role:"user",parts:[{text:input}]}]:input.map(m=>({role:m.role==="assistant"?"model":"user",parts:[{text:m.content}]}));return {text:await gem(c)};};
+S.json=async p=>JSON.parse((await S(p+"\n\nReturn only valid JSON, no extra text.")).text.replace(/```json|```/g,"").trim());
+const DL={save:async({filename,data})=>{const a=document.createElement("a");a.href=URL.createObjectURL(data);a.download=filename;a.click();}};
+const NOAI="AI is not working. Check your internet and your Gemini key.";
+async function ask(p,json){if(!S)throw new Error(NOAI);return json?await S.json(p):(await S(p,{cache:false})).text;}
+function speak(t,cb){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-IN";u.rate=.9;if(cb)u.onend=cb;speechSynthesis.speak(u);}catch(e){if(cb)cb();}}
+const C={};
+const TOPICS="Introducing yourself|Meeting a neighbour|Asking for directions|Ordering at a restaurant|Ordering tea at a tea stall|Shopping for clothes|Buying vegetables at the market|Bargaining with a shopkeeper|Booking a train ticket|Taking an auto rickshaw|Catching a bus|At the airport check-in|Hotel check-in|Hotel room complaint|At the bank opening an account|At the ATM problem|Visiting a doctor|At the pharmacy|Calling in sick to office|Job interview introduction|Job interview strengths and weaknesses|Asking for a salary raise|Talking to your manager|Team meeting update|Phone call to a client|Leaving a voicemail|Scheduling a meeting|Asking a colleague for help|Lunch break chat|Farewell party at office|First day at a new job|Asking for leave|Using a new mobile app|Mobile recharge|Fixing a broken phone|Internet not working|Calling customer care|Returning a product|Online delivery delay|Grocery store billing|At the petrol pump|At the traffic police|Renting a flat|Talking to the landlord|Electricity bill issue|Plumber visit|Hiring a maid or cook|Parent teacher meeting|Admission in college|Talking to a teacher|Study group discussion|Asking about exam dates|At the library|Sports and cricket chat|Planning a weekend trip|Talking about weather|Discussing a movie|Inviting a friend to dinner|Birthday party|Wedding invitation|Festival greetings|Visiting relatives|Talking to grandparents|Asking a stranger for help|Lost wallet|Reporting a lost item|Calling an ambulance|Police complaint|Making a new friend|Talking about hobbies|Talking about your family|Talking about your city|Discussing food and recipes|At the cinema counter|At the gym|Joining a yoga class|Talking about health|Dentist appointment|Eye check-up|Buying medicine|Haircut at the salon|Tailor shop|Laundry pick-up|Courier and post office|Passport office visit|Opening a SIM card|Buying a bike|Buying a car|Taking a test drive|Insurance enquiry|Paying taxes|Asking for a refund|Writing a complaint|Apologising for being late|Declining an invitation politely|Giving compliments|Giving advice to a friend|Asking for an opinion|Disagreeing politely|Making an appointment|Asking someone to repeat|Talking about future plans|Talking about your dream|Video call with family|Online class problem|Social media chat|Ordering food online|Shopping online|Booking a cab|Asking for a lift|Neighbour noise complaint|Society meeting|Water supply complaint|Garden and plants chat".split("|");
+const PHR="Good morning|Good afternoon|Good evening|Good night|How are you?|I am fine, thank you.|Nice to meet you.|What is your name?|My name is…|Where are you from?|I am from Nagpur.|How was your day?|What do you do?|I work in…|Please sit down.|Come in, please.|Thank you very much.|You are welcome.|No problem.|Sorry about that.|Excuse me.|Pardon me?|Could you repeat that, please?|Please speak slowly.|I did not understand.|What does it mean?|How do you say this in English?|Can you help me?|Sure, I can help.|Just a moment, please.|Wait for me.|Let me think.|I am not sure.|I don’t know.|I think so.|I don’t think so.|That’s right.|That’s a good idea.|I agree with you.|I disagree.|Maybe later.|Of course!|Definitely.|Not at all.|It doesn’t matter.|Never mind.|Take care.|See you tomorrow.|See you soon.|Have a nice day.|Same to you.|Congratulations!|Best of luck!|Happy birthday!|Get well soon.|I am very happy.|I am tired.|I am hungry.|I am thirsty.|I am busy right now.|I am running late.|I am on my way.|I will be there in ten minutes.|Where is the bathroom?|How much is this?|It is too expensive.|Can you give me a discount?|I will take this one.|Can I pay by card?|Do you accept UPI?|Keep the change.|Can I have the bill, please?|I would like a cup of tea.|Not too sweet, please.|It was delicious.|Can I get some water?|I am allergic to…|How do I get to the station?|Is it far from here?|Turn left at the corner.|Go straight ahead.|It is on your right.|Where can I get a taxi?|Please stop here.|What time does it start?|What time is it?|It is half past six.|I will call you later.|Can I take a message?|Who is calling, please?|The line is busy.|I will send you a message.|Please check your email.|Can we meet tomorrow?|I have a meeting at ten.|Let’s start the meeting.|I have a question.|Could you explain that again?|Let me know if you need anything.|I will get back to you.|That sounds great.|I’m looking forward to it.|It’s my pleasure.|I’m learning English.|Practice makes perfect.|I want to speak fluently.|Don’t be shy, just speak.|Mistakes are okay.|What’s the weather like today?|It’s very hot today.|It looks like rain.|Let’s have lunch together.|Shall we go for a walk?|I really enjoyed it.".split("|");
+const WORDS=[["Enthusiastic","उत्साही"],["Reliable","विश्वासार्ह"],["Improve","सुधारणे"],["Confident","आत्मविश्वासू"],["Challenge","आव्हान"],["Achieve","साध्य करणे"],["Polite","नम्र"],["Opportunity","संधी"],["Honest","प्रामाणिक"],["Hesitate","संकोच करणे"],["Careful","सावध"],["Patience","संयम"],["Mistake","चूक"],["Practice","सराव"],["Fluent","अस्खलित"],["Pronounce","उच्चार करणे"],["Grateful","कृतज्ञ"],["Curious","जिज्ञासू"],["Convince","पटवणे"],["Borrow","उसने घेणे"],["Schedule","वेळापत्रक"],["Suggest","सुचवणे"],["Prefer","प्राधान्य देणे"],["Familiar","परिचित"]];
+const STORY=["a farmer and his clever daughter","a first day at a new office","a lost dog finding home","a train journey from Nagpur to Pune","a small tea stall that became famous","a student preparing for an exam","a rainy day with friends","a shy boy learning to speak English","a market full of festival lights","a kind neighbour","a cricket match in the lane","a grandmother’s recipe","an old bicycle","a surprise birthday party"];
+const TABS=[["chat","🤖 AI Chat"],["talk","💬 Conversations"],["phr","📝 Phrases"],["read","📖 Stories"],["voc","🔤 Vocab"],["news","📰 News"],["dic","📚 Dictionary"]];
+let tab="chat",msgs=[],auto=false;
+$("#nav").innerHTML=TABS.map(t=>`<button data-t="${t[0]}">${t[1]}</button>`).join("");
+$("#nav").onclick=e=>{const t=e.target.dataset.t;if(t)go(t);};
+function go(t){tab=t;document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));V[t]();}
+const M=$("#main");
+const day=()=>Math.floor(Date.now()/864e5);
+function wait(el,t){el.innerHTML=`<div class="card mut">${t||"Please wait…"}</div>`;}
+function fail(el,e){el.innerHTML=`<div class="card">⚠️ ${esc(e.message||NOAI)}</div>`;}
+const V={};
+V.chat=()=>{
+ M.innerHTML=`<div class="card mut">Talk to your English partner. Type or tap 🎤. I will reply, correct you gently, and ask a question.</div><div id="log"></div><div class="row"><button class="g" id="mic">🎤</button><input type="text" id="in" placeholder="Type in English…"><button class="b" id="snd">Send</button></div><div class="row" style="margin-top:8px"><button class="g" id="au">🔈 Voice replies: ${auto?"on":"off"}</button><button class="g" id="cl">New chat</button></div>`;
+ const draw=()=>{$("#log").innerHTML=msgs.map(m=>`<div class="msg ${m.role==="user"?"me":"bot"}">${esc(m.content)}</div>`).join("")||`<div class="mut">Say “Hello!” to begin.</div>`;window.scrollTo(0,document.body.scrollHeight);};
+ draw();
+ const send=async()=>{const v=$("#in").value.trim();if(!v)return;$("#in").value="";msgs.push({role:"user",content:v});draw();
+  const arr=msgs.slice(-10).map(m=>({...m}));if(arr[0].role!=="user")arr.shift();
+  arr[0].content="You are a friendly spoken-English partner for a Marathi speaker. Reply in simple English in 1-3 short sentences. If the learner made a grammar mistake, give the corrected sentence first on a line starting with ✅, then continue the chat and end with one easy question. Add a Marathi hint in brackets only if they seem stuck.\n\n"+arr[0].content;
+  $("#log").insertAdjacentHTML("beforeend",`<div class="msg bot mut" id="tk">Typing…</div>`);
+  try{const r=(await S(arr,{cache:false})).text;msgs.push({role:"assistant",content:r});draw();if(auto)speak(r);}catch(e){msgs.pop();draw();$("#log").insertAdjacentHTML("beforeend",`<div class="msg bot">⚠️ ${esc(S?e.message||"Try again.":NOAI)}</div>`);}};
+ $("#snd").onclick=send;$("#in").onkeydown=e=>{if(e.key==="Enter")send();};
+ $("#au").onclick=()=>{auto=!auto;V.chat();};$("#cl").onclick=()=>{msgs=[];V.chat();};
+ $("#mic").onclick=()=>{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){alert("Voice typing is not supported in this browser. Please type.");return;}const r=new R();r.lang="en-IN";r.onresult=e=>{$("#in").value=e.results[0][0].transcript;send();};r.onerror=()=>alert("Microphone not allowed here.");r.start();};
+};
+V.talk=()=>{
+ M.innerHTML=`<div class="card mut">${TOPICS.length} everyday situations. Tap one to get a full dialogue with Marathi meaning.</div><input type="text" id="q" placeholder="Search situations…"><div id="ls"></div>`;
+ const draw=()=>{const q=$("#q").value.toLowerCase();$("#ls").innerHTML=TOPICS.map((t,i)=>[t,i]).filter(x=>x[0].toLowerCase().includes(q)).map(x=>`<div class="card li" data-i="${x[1]}"><span>${x[1]+1}. ${esc(x[0])}</span><span>›</span></div>`).join("");};
+ draw();$("#q").oninput=draw;
+ $("#ls").onclick=async e=>{const c=e.target.closest("[data-i]");if(!c)return;const t=TOPICS[c.dataset.i];
+  M.innerHTML=`<button class="g" id="bk">← Back</button><h3>${esc(t)}</h3><div id="dl"></div>`;$("#bk").onclick=V.talk;wait($("#dl"),"Writing your conversation…");
+  try{if(!C["t"+t])C["t"+t]=await ask(`Write a natural 10-line everyday dialogue in simple spoken English between A and B for this situation: "${t}". Return only a JSON array of objects {"s":"A or B","e":"English line","m":"Marathi translation"}.`,true);
+   const d=C["t"+t];$("#dl").innerHTML=`<button class="b" id="pa">▶ Play all</button>`+d.map((l,i)=>`<div class="card ${l.s}"><b>${l.s}:</b> ${esc(l.e)} <button class="g" data-s="${i}">🔊</button><div class="mr">${esc(l.m)}</div></div>`).join("")+`<div class="mut">Tip: read the B lines aloud yourself, then switch and read A.</div>`;
+   $("#dl").onclick=ev=>{const s=ev.target.dataset.s;if(s!==undefined)speak(d[s].e);if(ev.target.id==="pa"){let i=0;const n=()=>{if(i<d.length)speak(d[i++].e,n);};n();}};
+  }catch(er){fail($("#dl"),er);}};
+};
+V.phr=()=>{
+ M.innerHTML=`<div class="card mut">${PHR.length} daily phrases. 🔊 listen · मराठी shows the meaning.</div><input type="text" id="q" placeholder="Search phrases…"><div id="ls"></div>`;
+ const draw=()=>{const q=$("#q").value.toLowerCase();$("#ls").innerHTML=PHR.map((t,i)=>[t,i]).filter(x=>x[0].toLowerCase().includes(q)).map(x=>`<div class="card"><div class="li"><span>${x[1]+1}. ${esc(x[0])}</span><span class="row"><button class="g" data-s="${x[1]}">🔊</button><button class="g" data-m="${x[1]}">मराठी</button></span></div><div class="mr" id="m${x[1]}">${esc(C["p"+x[1]]||"")}</div></div>`).join("");};
+ draw();$("#q").oninput=draw;
+ $("#ls").onclick=async e=>{const d=e.target.dataset;if(d.s!==undefined)speak(PHR[d.s]);if(d.m!==undefined){const i=d.m,el=$("#m"+i);if(!C["p"+i]){el.textContent="…";try{C["p"+i]=await ask(`Translate to natural spoken Marathi. Reply with only the Marathi text: ${PHR[i]}`);}catch(er){el.textContent=NOAI;return;}}el.textContent=C["p"+i];}};
+};
+function reader(txt,key){return `<div class="card story">${esc(txt)}</div><div class="row" style="flex-wrap:wrap"><button class="b" data-a="sp">🔊 Listen</button><button class="b" data-a="rec">🎥 Record (teleprompter)</button><button class="g" data-a="mr">मराठी</button></div><div id="mrt" class="card mr" hidden></div>`;}
+function readerEvents(box,txt){box.onclick=async e=>{const a=e.target.dataset.a;if(a==="sp")speak(txt);if(a==="rec")prompter(txt);if(a==="mr"){const o=$("#mrt");o.hidden=false;o.textContent="…";try{o.textContent=await ask("Translate to simple Marathi, only the translation:\n"+txt);}catch(er){o.textContent=NOAI;}}};}
+let so=0;
+V.read=async()=>{
+ const k="s"+day()+"_"+so,topic=STORY[(day()+so)%STORY.length];
+ M.innerHTML=`<div class="card mut">📅 ${new Date().toDateString()} · new story every day</div><div id="bx"></div><button class="g" id="nx">Another story</button>`;
+ $("#nx").onclick=()=>{so++;V.read();};wait($("#bx"),"Writing today’s story…");
+ try{if(!C[k])C[k]=await ask(`Write a short story of about 120 words in simple, clear spoken English for adult learners, about ${topic}. Start with a title line, then the story. Plain text only.`);
+  $("#bx").innerHTML=reader(C[k]);readerEvents($("#bx"),C[k]);}catch(e){fail($("#bx"),e);}
+};
+V.voc=()=>{
+ const draw=l=>{$("#ls").innerHTML=l.map(w=>`<div class="card li"><span><b>${esc(w[0])}</b> <span class="mr">${esc(w[1])}</span>${w[2]?`<div class="mut">${esc(w[2])}</div>`:""}</span><button class="g" data-s="${esc(w[0])}">🔊</button></div>`).join("");};
+ M.innerHTML=`<div class="card mut">Words with Marathi meaning. Tap “10 new words” for a fresh set.</div><button class="b" id="nw">✨ 10 new words</button><div id="ls"></div>`;
+ draw(C.vw||WORDS);
+ $("#ls").onclick=e=>{if(e.target.dataset.s)speak(e.target.dataset.s);};
+ $("#nw").onclick=async()=>{$("#ls").innerHTML=`<div class="card mut">Finding words…</div>`;try{const r=await ask(`Give 10 useful spoken-English words (intermediate level) not used before. Seed ${Date.now()}. Return only a JSON array of [english, marathi meaning, short example sentence].`,true);C.vw=r;draw(r);}catch(e){fail($("#ls"),e);}};
+};
+V.news=()=>{
+ M.innerHTML=`<div class="card mut">⚠️ Practice news written by AI in easy English. It is not live headlines — for real news, use your favourite news app and read it aloud here.</div><div class="row" style="flex-wrap:wrap">${["India","World","Sports","Technology","Science"].map(c=>`<button class="g" data-c="${c}">${c}</button>`).join("")}</div><div id="bx"></div>`;
+ M.onclick=async e=>{const c=e.target.dataset.c;if(!c)return;const k="n"+day()+c;wait($("#bx"),"Preparing news…");
+  try{if(!C[k])C[k]=await ask(`Write 3 short news-style items (about 50 words each) in simple English on the topic "${c}" for English learners, dated ${new Date().toDateString()}. Give each a headline. Plain text, no real quotes from real people.`);$("#bx").innerHTML=reader(C[k]);readerEvents($("#bx"),C[k]);}catch(er){fail($("#bx"),er);}};
+};
+V.dic=()=>{
+ M.innerHTML=`<div class="row"><input type="text" id="q" placeholder="Type an English word…"><button class="b" id="go">Search</button></div><div id="bx"></div>`;
+ const f=async()=>{const w=$("#q").value.trim();if(!w)return;wait($("#bx"),"Looking up…");
+  try{if(!C["d"+w.toLowerCase()])C["d"+w.toLowerCase()]=await ask(`Dictionary entry for the English word "${w}" for a Marathi learner. Return only JSON: {"word":"","pos":"","pron":"simple pronunciation","mr":"Marathi meaning(s)","en":"simple English meaning","ex":"example sentence","exmr":"Marathi translation of the example"}`,true);
+   const d=C["d"+w.toLowerCase()];$("#bx").innerHTML=`<div class="card"><h2 style="margin:0">${esc(d.word)} <button class="g" id="sp">🔊</button></h2><div class="mut">${esc(d.pos)} · ${esc(d.pron)}</div><p class="mr" style="font-size:20px">${esc(d.mr)}</p><p>${esc(d.en)}</p><p><i>${esc(d.ex)}</i></p><p class="mr">${esc(d.exmr)}</p></div>`;$("#sp").onclick=()=>speak(d.word);}catch(e){fail($("#bx"),e);}};
+ $("#go").onclick=f;$("#q").onkeydown=e=>{if(e.key==="Enter")f();};
+};
+async function prompter(text){
+ const o=$("#pr");o.hidden=false;
+ o.innerHTML=`<video id="pv" autoplay muted playsinline></video><div id="pt"><div id="pti">${esc(text).replace(/\n/g,"<br>")}</div></div><div id="pm">Tap Record, then read the scrolling text.</div><div id="pc"><label>🐢<input type="range" id="ps" min="1" max="8" value="3">🐇</label><button class="b" id="r1">● Record</button><button class="g" id="x">✕</button></div>`;
+ let st,rec,ch=[],raf,y=0,run=false;
+ try{st=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:true});$("#pv").srcObject=st;}catch(e){$("#pm").textContent="Camera is blocked here, so only the teleprompter works. Tap Record to start scrolling and read aloud.";}
+ const tick=()=>{if(!run)return;y+=$("#ps").value*.25;$("#pti").style.transform=`translateY(${-y}px)`;raf=requestAnimationFrame(tick);};
+ const close=()=>{run=false;cancelAnimationFrame(raf);if(st)st.getTracks().forEach(t=>t.stop());o.hidden=true;o.innerHTML="";};
+ $("#x").onclick=close;
+ $("#r1").onclick=()=>{
+  if(!run&&!rec){run=true;y=0;tick();$("#r1").textContent="■ Stop";$("#pm").textContent="";
+   if(st&&window.MediaRecorder){rec=new MediaRecorder(st);rec.ondataavailable=e=>ch.push(e.data);
+    rec.onstop=()=>{const b=new Blob(ch,{type:rec.mimeType||"video/webm"}),v=$("#pv");v.srcObject=null;v.src=URL.createObjectURL(b);v.muted=false;v.controls=true;v.className="pl";v.play().catch(()=>{});$("#pt").hidden=true;$("#pm").textContent="Great job! Watch yourself and notice your pronunciation.";
+     $("#r1").textContent="💾 Save";$("#r1").onclick=async()=>{try{if(DL)await DL.save({filename:"my-practice.webm",data:b});else $("#pm").textContent="Saving is not available here.";}catch(e){$("#pm").textContent="Save cancelled.";}};};
+    rec.start();}
+  }else{run=false;cancelAnimationFrame(raf);if(rec&&rec.state==="recording")rec.stop();else{$("#r1").textContent="● Record";rec=null;}}
+ };
+}
+go("chat");
+</script></body></html>
